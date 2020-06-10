@@ -13,8 +13,6 @@ import random
 import time
 from colorize import Colorize
 
-
-
 class Character(object):
     def __init__(self, name='<undefined>', health=10, power=5, coins=20, bounty=5):
         self.name = name
@@ -147,8 +145,6 @@ class Goblin(Character):
 
 def main():
     # Set it to false when hero dies to end game
-    
-
     while True:
         # Just grab the first one and go from there. Removes one every time one is defeated
         current_enemy = enemy_order[0]
@@ -160,7 +156,9 @@ def main():
             print("What do you want to do?")
             print("1. fight %s" % current_enemy.name)
             print("2. do nothing")
-            print("3. flee")
+            print("3. Buy Magical Items")
+            print("4. Use A Magical Item")
+            print("5. flee")
             print("> ",)
             user_input = input()
             if user_input == "1":
@@ -169,6 +167,12 @@ def main():
             elif user_input == "2":
                 pass
             elif user_input == "3":
+                enter_store()
+                break
+            elif user_input == "4":
+                #use a magical item
+                break
+            elif user_input == "5":
                 print("Goodbye.")
                 break
             else:
@@ -179,6 +183,44 @@ def main():
                 current_enemy.attack(your_hero)
 
 
+def enter_store():
+    while True:
+
+        print("Welcome to the Magical Items Shop!\n---------------------")
+        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage" % (item_costs[0], item_costs[1]))
+        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3)")
+        menu_input = int(input())
+
+        # Reference to coin coin
+        global coin_count
+
+        #  Specifically the index for a item in either the 'items' list or 'item_costs' list
+        i_inx = menu_input - 1
+
+        if menu_input == 1:
+            main()
+            break
+        elif menu_input == 2:
+            if coin_count >= item_costs[i_inx] and items[i_inx] < 3:
+                # subtracting coins and adding one of the item to the items list
+                coin_count=-5
+                items[menu_input - 2]+=1
+                print("Purchased Super Tonic!")
+            else:
+                print("Not enough coins, or maximum item count reached")
+        elif menu_input == 3:
+            if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
+                coin_count-=6
+                items[menu_input - 2]+=1
+            else:
+                print("Not enough coins, or maximum item count reached")
+        
+
+def use_items():
+    while True:
+        print("YOUR ITEMS = ")
+
+
 word_colors = {
     "dice":"Green",
     "YOU DIED":"Red",
@@ -187,17 +229,26 @@ word_colors = {
     "Goblin":"Red",
     "Shadow":"Magenta",
     "average":"Yellow"
-
 }
 
 colorize = Colorize(word_colors,{"Yellow":"\u001b[33;1m"})
+
+# Receive coins from killing enemies. Use them to buy items in the shop
 coin_count = 0
+# 0, Tonic Drink, 1, Armor (Index is which item, number is how many)
+items = [0, 0]
+# Variables represent cost in coins for each item. index: 0 = tonic, 1 = armor, etc. Makes it easy to change price JUST here.
+item_costs = [5, 6]
+item_names = ["Super Tonic", "Armor"]
+
+# Declaring all character entities
 your_hero = Hero("Hero")
 palpatine = Palpatine("Palpatine")
 goblin = Goblin("Goblin")
 zombie = Zombie("zombie")
 medic = Medic("Medic")
 shadow = Shadow("Shadow")
+# The order in which you face enemies
 enemy_order = [goblin, palpatine, medic, shadow]
 
 main()
