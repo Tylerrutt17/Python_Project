@@ -1,8 +1,8 @@
 """
-In this simple RPG game, The Hero (You) fights the goblin. You have the options to:
+In this simple RPG game, The Hero (You) fights the enemy. You have the options to:
 
-1. fight goblin
-2. do nothing - in which case the goblin will attack you anyway
+1. fight enemy
+2. do nothing - in which case the enemy will attack you anyway
 3. flee
 
 """
@@ -13,11 +13,14 @@ import random
 import time
 from colorize import Colorize
 
+
+
 class Character(object):
-    def __init__(self, name='<undefined>', health=10, power=5, coins=20):
+    def __init__(self, name='<undefined>', health=10, power=5, coins=20, bounty=5):
         self.name = name
         self.health = health
         self.power = power
+        self.bounty = bounty
 
     def is_alive(self):
         return self.health > 0
@@ -28,10 +31,26 @@ class Character(object):
         if not self.is_alive():
             # If its any other troop than hero, remove it from enemy_order.
             if self.name != "Hero":
-                print("Yeah! %s is dead." % self.name)
-                enemy_order.pop(0)
-                if len(enemy_order) > 0:
-                    print("\nNEW CHALLENGER: %s\n" % enemy_order[0].name)
+                # Zombies cannot die
+                if self.name == "Zombie":
+                    print("Uh Oh, Can't kill zombies! Zombie Heals 5 Health")
+                    # Can't die, so set health to 5 every attack
+                    self.health = 5
+                else:
+                    # Any other troop
+                    print("Yeah! %s is dead. %s Coins Collected" % (self.name, self.bounty))
+                    # getting the global value of coin_count since its outside the function
+                    global coin_count
+                    coin_count += self.bounty
+                    enemy_order.pop(0)
+
+                    if len(enemy_order) > 0:
+                        # Special msg for Palpatine aka the boss
+                        if enemy_order[0].name == "Palpatine":
+                            print("\n'I AM THE SENATE!'\nUh oh, Palpatine just showed up\n")
+                        else:
+                            # Standard msg
+                            print("\nNEW CHALLENGER: %s\n" % enemy_order[0].name)
             else:
                 print("OH NO, YOU DIED!\nThanks For Playing!")
                 exit()
@@ -41,7 +60,7 @@ class Character(object):
             return
         print("%s attacks %s" % (self.name, enemy.name))
 
-        # Outside reference to the troops power
+        # Outside reference to the troops power. Changed for abilities and such.
         _power_ = self.power
 
         if self.name == "Hero":
@@ -65,7 +84,13 @@ class Character(object):
                 print("The Shadow Evaded your attack!")
                 _power_ = 0
 
-        print("%s Dealt %s Damage to the %s" % (self.name, _power_, enemy.name))
+        # if palpatine is attacking, 1/10 chance of 100 Damage Lightning shock
+        if self.name == "Palpatine":
+            chance = random.randint(1, 10)
+            if chance == 1:
+                _power_ = 100
+
+        print("%s Dealt %s Damage to %s" % (self.name, _power_, enemy.name))
         enemy.receive_damage(_power_)
         time.sleep(1.5)
         
@@ -79,9 +104,18 @@ class Hero(Character):
         self.health = 10
         self.power = 5
 
+class Palpatine(Character):
+    def __init__(self, name):
+        super().__init__(name)  
+        self.bounty = 30
+        self.health = 15
+        self.power = 5
+        self.name = "Palpatine"
+
 class Shadow(Character):
     def __init__(self, name):
         super().__init__(name)  
+        self.bounty = 7
         self.name = name
         self.health = 1
         self.power = 1
@@ -90,7 +124,7 @@ class Shadow(Character):
 class Zombie(Character):
     def __init__(self, name):
         super().__init__(name)  
-        self.name = name
+        self.bounty = 5
         self.health = 5
         self.power = 2
         self.name = "Zombie"
@@ -98,7 +132,7 @@ class Zombie(Character):
 class Medic(Character):
     def __init__(self, name):
         super().__init__(name)  
-        self.name = name
+        self.bounty = 10
         self.health = 20
         self.power = 2
         self.name = "Medic"
@@ -106,6 +140,7 @@ class Medic(Character):
 class Goblin(Character):
     def __init__(self, name):
         super().__init__(name)  
+        self.bounty = 5
         self.health = 6
         self.power = 3
         self.name = "Goblin"
@@ -156,10 +191,14 @@ word_colors = {
 }
 
 colorize = Colorize(word_colors,{"Yellow":"\u001b[33;1m"})
-
+coin_count = 0
 your_hero = Hero("Hero")
+palpatine = Palpatine("Palpatine")
 goblin = Goblin("Goblin")
+zombie = Zombie("zombie")
 medic = Medic("Medic")
 shadow = Shadow("Shadow")
-enemy_order = [goblin, medic, shadow]
+enemy_order = [goblin, palpatine, medic, shadow]
+
 main()
+
