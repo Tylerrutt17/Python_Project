@@ -3,7 +3,9 @@ In this simple RPG game, The Hero (You) fights the enemy. You have the options t
 
 1. fight enemy
 2. do nothing - in which case the enemy will attack you anyway
-3. flee
+3. Buy Magical Items
+4. Use Said Magical Items
+5. flee
 
 """
 
@@ -171,6 +173,7 @@ def main():
                 break
             elif user_input == "4":
                 #use a magical item
+                use_items()
                 break
             elif user_input == "5":
                 print("Goodbye.")
@@ -185,17 +188,17 @@ def main():
 
 def enter_store():
     while True:
-
-        print("Welcome to the Magical Items Shop!\n---------------------")
-        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage" % (item_costs[0], item_costs[1]))
-        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3)")
-        menu_input = int(input())
-
         # Reference to coin coin
         global coin_count
 
+        print("Welcome to the Magical Items Shop!\n---------------------")
+        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage" % (item_costs[0], item_costs[1]))
+        print("YOUR COIN COUNT: %s" % coin_count)
+        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3)")
+        menu_input = int(input())
+
         #  Specifically the index for a item in either the 'items' list or 'item_costs' list
-        i_inx = menu_input - 1
+        i_inx = menu_input - 2
 
         if menu_input == 1:
             main()
@@ -205,33 +208,45 @@ def enter_store():
                 # subtracting coins and adding one of the item to the items list
                 coin_count=-5
                 items[menu_input - 2]+=1
-                print("Purchased Super Tonic!")
+                print("\nPURCHASED SUPER TONIC\n")
             else:
                 print("Not enough coins, or maximum item count reached")
         elif menu_input == 3:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
                 coin_count-=6
                 items[menu_input - 2]+=1
+                print("\nPurchased Armor!\n")
             else:
                 print("Not enough coins, or maximum item count reached")
         
 
 def use_items():
     while True:
-        print("YOUR ITEMS = ")
+        print("Your Items!")
+        for counter, i in enumerate(items):
+            # prints item index, how many, and what type
+            print("%s: %sx %s" % (counter+1, i, item_names[counter]))
+        
+        # No items in list
+        if counter <= 0:
+            print("You Don't Have Any Items")
+        
+        use_input = int(input("Leave (0), Use Item(enter number)\n"))
 
+        # Can't use armor like a potion.
+        if use_input != 2:
+            if items[use_input-1] > 0:
+                print("Using %s" % item_names[use_input-1])
+            else:
+                print("You Don't Own Any Of That Item!")
+        else:
+            if items[use_input-1] > 0:
+                print("Armor is already attached.")
+            else:
+                print("You Don't Own Any Armor")
 
-word_colors = {
-    "dice":"Green",
-    "YOU DIED":"Red",
-    "NEW CHALLENGER":"Yellow",
-    "Hero":"Green",
-    "Goblin":"Red",
-    "Shadow":"Magenta",
-    "average":"Yellow"
-}
-
-colorize = Colorize(word_colors,{"Yellow":"\u001b[33;1m"})
+                
+#colorize = Colorize(word_colors,{"Yellow":"\u001b[33;1m"})
 
 # Receive coins from killing enemies. Use them to buy items in the shop
 coin_count = 0
@@ -249,7 +264,7 @@ zombie = Zombie("zombie")
 medic = Medic("Medic")
 shadow = Shadow("Shadow")
 # The order in which you face enemies
-enemy_order = [goblin, palpatine, medic, shadow]
+enemy_order = [goblin, medic, shadow, palpatine]
 
 main()
 
