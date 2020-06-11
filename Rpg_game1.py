@@ -70,6 +70,22 @@ class Character(object):
                 print("The Hero Dealt 2x Damage this attack!")
                 _power_ = _power_ * 2
 
+        if enemy.name == "Hero":
+            # If Hero has evade on, give him a 5%+ each potion chance of evading an attack
+            # Gets the count of evade potions from the items
+            evade_count = items[2]
+            chance = random.randint(1, 20)
+            if chance <= evade_count:
+                print("The Hero Evaded the Attack!")
+                _power_ = 0
+
+            # If Hero has armor on, deduct damage by 1, unless its already at 0
+            armor = items[1]
+            # Armor > 0 means its been purchased
+            if armor > 0:
+                if _power_ > 0:
+                    _power_-=1
+
         if enemy.name == "Medic":
             # 20% Chance of healing 2 health
             chance = random.randint(1, 5)
@@ -115,10 +131,10 @@ class Palpatine(Character):
 class Shadow(Character):
     def __init__(self, name):
         super().__init__(name)  
-        self.bounty = 7
+        self.bounty = 10
         self.name = name
         self.health = 1
-        self.power = 1
+        self.power = 2
         self.name = "Shadow"
 
 class Zombie(Character):
@@ -148,6 +164,11 @@ class Goblin(Character):
 def main():
     # Set it to false when hero dies to end game
     while True:
+        
+        # Game is over once all enemies are defeated
+        if len(enemy_order) < 1:
+            print("You Beat All Of The Enemies! Thanks For Playing!")
+
         # Just grab the first one and go from there. Removes one every time one is defeated
         current_enemy = enemy_order[0]
 
@@ -192,12 +213,12 @@ def enter_store():
         global coin_count
 
         print("Welcome to the Magical Items Shop!\n---------------------")
-        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage" % (item_costs[0], item_costs[1]))
+        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage\n$%s Evade - +5 Percent chance evading an attacking. (Max 20 Percent)" % (item_costs[0], item_costs[1], item_costs[2]))
         print("YOUR COIN COUNT: %s" % coin_count)
-        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3)")
+        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3), Buy Evade(4)")
         menu_input = int(input())
 
-        #  Specifically the index for a item in either the 'items' list or 'item_costs' list
+        # Specifically the index for a item in either the 'items' list or 'item_costs' list
         i_inx = menu_input - 2
 
         if menu_input == 1:
@@ -206,20 +227,27 @@ def enter_store():
         elif menu_input == 2:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 3:
                 # subtracting coins and adding one of the item to the items list
-                coin_count=-5
+                coin_count-=item_costs[i_inx]
                 items[menu_input - 2]+=1
                 print("\nPURCHASED SUPER TONIC\n")
             else:
                 print("Not enough coins, or maximum item count reached")
         elif menu_input == 3:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
-                coin_count-=6
+                coin_count-=item_costs[i_inx]
                 items[menu_input - 2]+=1
                 print("\nPurchased Armor!\n")
             else:
                 print("Not enough coins, or maximum item count reached")
+        elif menu_input == 4:
+            if coin_count >= item_costs[i_inx] and items[i_inx] < 4:
+                # subtracting coins and adding one of the item to the items list
+                coin_count-=item_costs[i_inx]
+                items[menu_input - 2]+=1
+                print("\nPURCHASED EVADE\n")
+            else:
+                print("You Can Only Buy Four of these")
         
-
 def use_items():
     while True:
         print("Your Items!")
@@ -233,10 +261,18 @@ def use_items():
         
         use_input = int(input("Leave (0), Use Item(enter number)\n"))
 
+        # Exits if input is 0
+        if use_input == 0:     
+            main()
+            break
+
         # Can't use armor like a potion.
         if use_input != 2:
             if items[use_input-1] > 0:
                 print("Using %s" % item_names[use_input-1])
+                items[use_input-1]-=1
+                print("Hero has 10 Health!")
+                your_hero.health = 10
             else:
                 print("You Don't Own Any Of That Item!")
         else:
@@ -249,12 +285,12 @@ def use_items():
 #colorize = Colorize(word_colors,{"Yellow":"\u001b[33;1m"})
 
 # Receive coins from killing enemies. Use them to buy items in the shop
-coin_count = 0
+coin_count = 50
 # 0, Tonic Drink, 1, Armor (Index is which item, number is how many)
-items = [0, 0]
-# Variables represent cost in coins for each item. index: 0 = tonic, 1 = armor, etc. Makes it easy to change price JUST here.
-item_costs = [5, 6]
-item_names = ["Super Tonic", "Armor"]
+items = [0, 0, 0]
+# Variables represent cost in coins for each item. index: 0 = tonic, 1 = armor, 2 = evade, etc. Makes it easy to change price JUST here.
+item_costs = [5, 6, 5]
+item_names = ["Super Tonic", "Armor", "Evade Ability"]
 
 # Declaring all character entities
 your_hero = Hero("Hero")
