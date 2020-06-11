@@ -138,13 +138,14 @@ class Jedi(Character):
         self.name = name
         self.health = 10
         self.power = 5
+        self.max_health = 10
 
 class Palpatine(Character):
     def __init__(self, name):
         super().__init__(name)  
         self.bounty = 30
         self.health = 25
-        self.power = 5
+        self.power = 6
         self.name = "Palpatine"
 
 class Shadow(Character):
@@ -241,9 +242,9 @@ def enter_store():
         global coin_count
 
         print("Welcome to the Magical Items Shop!\n---------------------")
-        print("Items For Sale: \n$%s Super Tonic - Heals Jedi Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage\n$%s Evade - +5 Percent chance evading an attacking. (Max 20 Percent)\n$%s Lightsaber extension - +1 Damage Per Hero Attack (1 MAX)" % (item_costs[0], item_costs[1], item_costs[2], item_costs[3]))
+        print("Items For Sale: \n$%s Super Tonic - Heals Jedi Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage\n$%s Evade - +5 Percent chance evading an attacking. (Max 20 Percent)\n$%s Lightsaber extension - +1 Damage Per Hero Attack (1 MAX)\n$%s Max Health Boost - 10->12 Max Health" % (item_costs[0], item_costs[1], item_costs[2], item_costs[3], item_costs[4]))
         print("YOUR CREDIT COUNT: %s" % coin_count)
-        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3), Buy Evade(4), Buy Lightsaber Extension(5)")
+        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3), Buy Evade(4), Buy Lightsaber Extension(5), Buy Max Health Boost(6)")
         menu_input = int(input())
 
         # Specifically the index for a item in either the 'items' list or 'item_costs' list
@@ -279,8 +280,16 @@ def enter_store():
             else:
                 print("You Can Only Buy 1 Of These")
                 continue
+        elif menu_input == 6:
+            if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
+                # subtracting coins and adding one of the item to the items list
+                print("\nPurchased Health Boost\n")
+                your_jedi.max_health = 12
+            else:
+                print("You Can Only Buy 1 Of These")
+                continue
         # Subtracts cost depending on which item selected
-        if menu_input < 6:
+        if menu_input < 7:
             coin_count-=item_costs[i_inx]
             items[menu_input - 2]+=1
         else:
@@ -309,8 +318,8 @@ def use_items():
             if items[use_input-1] > 0:
                 print("Using %s" % item_names[use_input-1])
                 items[use_input-1]-=1
-                print("Hero has 10 Health!")
-                your_jedi.health = 10
+                print("Hero has %s Health!" % your_jedi.max_health)
+                your_jedi.health = your_jedi.max_health
             else:
                 print("You Don't Own Any Of That Item!")
         else:
@@ -325,10 +334,10 @@ def use_items():
 # Receive coins from killing enemies. Use them to buy items in the shop
 coin_count = 50
 # 0, Tonic Drink, 1, Armor (Index is which item, number is how many)
-items = [0, 0, 0, 0]
+items = [0, 0, 0, 0, 0]
 # Variables represent cost in coins for each item. index: 0 = tonic, 1 = armor, 2 = evade, etc. Makes it easy to change price JUST here.
-item_costs = [5, 6, 5, 8]
-item_names = ["Super Tonic", "Armor", "Evade Ability", "Lightsaber Extension"]
+item_costs = [5, 6, 5, 8, 10]
+item_names = ["Super Tonic", "Armor", "Evade Ability", "Lightsaber Extension", "++Max Health++"]
 
 # Declaring all character entities
 your_jedi = Jedi("Jedi")
