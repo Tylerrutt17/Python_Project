@@ -30,7 +30,7 @@ class Character(object):
         print("%s received %d damage." % (self.name, points))
         if not self.is_alive():
             # If its any other troop than hero, remove it from enemy_order.
-            if self.name != "Hero":
+            if self.name != "Jedi":
                 # Zombies cannot die
                 if self.name == "Zombie":
                     print("Uh Oh, Can't kill zombies! Zombie Heals 5 Health")
@@ -38,7 +38,7 @@ class Character(object):
                     self.health = 5
                 else:
                     # Any other troop
-                    print("Yeah! %s is dead. %s Coins Collected" % (self.name, self.bounty))
+                    print("Yeah! %s is dead. %s Credits Collected" % (self.name, self.bounty))
                     # getting the global value of coin_count since its outside the function
                     global coin_count
                     coin_count += self.bounty
@@ -63,20 +63,31 @@ class Character(object):
         # Outside reference to the troops power. Changed for abilities and such.
         _power_ = self.power
 
-        if self.name == "Hero":
+        if self.name == "Jedi":
             # 20% Chance of doing 2x damage
             chance = random.randint(1, 5)
             if chance == 1:
-                print("The Hero Dealt 2x Damage this attack!")
+                print("The Jedi Dealt 2x Damage this attack!")
                 _power_ = _power_ * 2
+            # if sharpening tool has been bought, deal +1 damage
+            if items[3] > 0:
+                _power_+=1
 
-        if enemy.name == "Hero":
+        if enemy.name == "Jedi":
+            # Palpatines Lighting Attack
+            if self.name == "Palpatine":
+                # 20% Chance of lighting attack
+                chance = random.randint(1, 5)
+                if chance == 1:
+                    _power_ = self.power + 1
+                    print("Palpatine Force Shocked You For +1 Damage!")
+
             # If Hero has evade on, give him a 5%+ each potion chance of evading an attack
             # Gets the count of evade potions from the items
             evade_count = items[2]
             chance = random.randint(1, 20)
             if chance <= evade_count:
-                print("The Hero Evaded the Attack!")
+                print("The Jedi Evaded the Attack!")
                 _power_ = 0
 
             # If Hero has armor on, deduct damage by 1, unless its already at 0
@@ -93,18 +104,26 @@ class Character(object):
                 print("You dealt 2 less damage to the medic because he healed up!")
                 _power_ = _power_ -2
         
-        if enemy.name == "Shadow":
+        if enemy.name == "Shadow Trooper":
             # 10% Chance of taking damage
             chance = random.randint(1, 10)
             if chance != 1:
-                print("The Shadow Evaded your attack!")
+                print("The Shadow Trooper Evaded your attack!")
                 _power_ = 0
 
-        # if palpatine is attacking, 1/10 chance of 100 Damage Lightning shock
+        # if palpatine is attacking, 1/25 chance of 100 Damage Lightning shock // Instakill
         if self.name == "Palpatine":
-            chance = random.randint(1, 10)
+            chance = random.randint(1, 25)
             if chance == 1:
                 _power_ = 100
+                print("\nPalpatine Called a Force Storm and Destroyed You!\n")
+
+        # 20% Chance of doing +2 Damage
+        if self.name == "Super Battle Droid":
+            chance = random.randint(1, 5)
+            if chance == 1:
+                _power_+=2
+                print("The Super Battle Droid shot his wrist rocket for +2 Damage")
 
         print("%s Dealt %s Damage to %s" % (self.name, _power_, enemy.name))
         enemy.receive_damage(_power_)
@@ -113,7 +132,7 @@ class Character(object):
     def print_status(self):
         print("%s has %s health and %s power" % (self.name, self.health, self.power))
 
-class Hero(Character):
+class Jedi(Character):
     def __init__(self, name):
         super().__init__(name)  
         self.name = name
@@ -124,7 +143,7 @@ class Palpatine(Character):
     def __init__(self, name):
         super().__init__(name)  
         self.bounty = 30
-        self.health = 15
+        self.health = 25
         self.power = 5
         self.name = "Palpatine"
 
@@ -135,7 +154,7 @@ class Shadow(Character):
         self.name = name
         self.health = 1
         self.power = 2
-        self.name = "Shadow"
+        self.name = "Shadow Trooper"
 
 class Zombie(Character):
     def __init__(self, name):
@@ -153,13 +172,22 @@ class Medic(Character):
         self.power = 2
         self.name = "Medic"
 
-class Goblin(Character):
+class B1Droid(Character):
     def __init__(self, name):
         super().__init__(name)  
         self.bounty = 5
         self.health = 6
         self.power = 3
-        self.name = "Goblin"
+        self.name = "B1_Battle_Droid"
+
+class SuperBattleDroid(Character):
+    def __init__(self, name):
+        super().__init__(name)  
+        self.bounty = 8
+        self.health = 10
+        self.power = 3
+        self.name = "Super Battle Droid"
+
 
 def main():
     # Set it to false when hero dies to end game
@@ -167,13 +195,14 @@ def main():
         
         # Game is over once all enemies are defeated
         if len(enemy_order) < 1:
-            print("You Beat All Of The Enemies! Thanks For Playing!")
+            print("\n\nYou Beat All Of The Enemies! Thanks For Playing!")
+            break
 
         # Just grab the first one and go from there. Removes one every time one is defeated
         current_enemy = enemy_order[0]
 
-        while current_enemy.is_alive() and your_hero.is_alive():
-            your_hero.print_status()
+        while current_enemy.is_alive() and your_jedi.is_alive():
+            your_jedi.print_status()
             current_enemy.print_status()
             print()
             print("What do you want to do?")
@@ -186,7 +215,7 @@ def main():
             user_input = input()
             if user_input == "1":
                 # Hero attacks current troop
-                your_hero.attack(current_enemy)
+                your_jedi.attack(current_enemy)
             elif user_input == "2":
                 pass
             elif user_input == "3":
@@ -204,8 +233,7 @@ def main():
 
             if current_enemy.is_alive():
                 # Current enemy alawys attacks hero after hero attacks
-                current_enemy.attack(your_hero)
-
+                current_enemy.attack(your_jedi)
 
 def enter_store():
     while True:
@@ -213,9 +241,9 @@ def enter_store():
         global coin_count
 
         print("Welcome to the Magical Items Shop!\n---------------------")
-        print("Items For Sale: \n$%s Super Tonic - Heals Hero Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage\n$%s Evade - +5 Percent chance evading an attacking. (Max 20 Percent)" % (item_costs[0], item_costs[1], item_costs[2]))
-        print("YOUR COIN COUNT: %s" % coin_count)
-        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3), Buy Evade(4)")
+        print("Items For Sale: \n$%s Super Tonic - Heals Jedi Back To 10 HP\n$%s Armor - Enemy Attacks Deal 1 Less Damage\n$%s Evade - +5 Percent chance evading an attacking. (Max 20 Percent)\n$%s Lightsaber extension - +1 Damage Per Hero Attack (1 MAX)" % (item_costs[0], item_costs[1], item_costs[2], item_costs[3]))
+        print("YOUR CREDIT COUNT: %s" % coin_count)
+        print("\nMENU: Leave Shop(1), Buy Super Tonic(2), Buy Armor(3), Buy Evade(4), Buy Lightsaber Extension(5)")
         menu_input = int(input())
 
         # Specifically the index for a item in either the 'items' list or 'item_costs' list
@@ -227,26 +255,36 @@ def enter_store():
         elif menu_input == 2:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 3:
                 # subtracting coins and adding one of the item to the items list
-                coin_count-=item_costs[i_inx]
-                items[menu_input - 2]+=1
                 print("\nPURCHASED SUPER TONIC\n")
             else:
-                print("Not enough coins, or maximum item count reached")
+                print("Not enough credits, or maximum item count reached")
+                continue
         elif menu_input == 3:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
-                coin_count-=item_costs[i_inx]
-                items[menu_input - 2]+=1
                 print("\nPurchased Armor!\n")
             else:
-                print("Not enough coins, or maximum item count reached")
+                print("Not enough credits, or maximum item count reached")
+                continue
         elif menu_input == 4:
             if coin_count >= item_costs[i_inx] and items[i_inx] < 4:
                 # subtracting coins and adding one of the item to the items list
-                coin_count-=item_costs[i_inx]
-                items[menu_input - 2]+=1
                 print("\nPURCHASED EVADE\n")
             else:
                 print("You Can Only Buy Four of these")
+                continue
+        elif menu_input == 5:
+            if coin_count >= item_costs[i_inx] and items[i_inx] < 1:
+                # subtracting coins and adding one of the item to the items list
+                print("\nPurchased Lightsaber Extension\n")
+            else:
+                print("You Can Only Buy 1 Of These")
+                continue
+        # Subtracts cost depending on which item selected
+        if menu_input < 6:
+            coin_count-=item_costs[i_inx]
+            items[menu_input - 2]+=1
+        else:
+            print("Choose one of the items on the menu")
         
 def use_items():
     while True:
@@ -272,7 +310,7 @@ def use_items():
                 print("Using %s" % item_names[use_input-1])
                 items[use_input-1]-=1
                 print("Hero has 10 Health!")
-                your_hero.health = 10
+                your_jedi.health = 10
             else:
                 print("You Don't Own Any Of That Item!")
         else:
@@ -287,20 +325,22 @@ def use_items():
 # Receive coins from killing enemies. Use them to buy items in the shop
 coin_count = 50
 # 0, Tonic Drink, 1, Armor (Index is which item, number is how many)
-items = [0, 0, 0]
+items = [0, 0, 0, 0]
 # Variables represent cost in coins for each item. index: 0 = tonic, 1 = armor, 2 = evade, etc. Makes it easy to change price JUST here.
-item_costs = [5, 6, 5]
-item_names = ["Super Tonic", "Armor", "Evade Ability"]
+item_costs = [5, 6, 5, 8]
+item_names = ["Super Tonic", "Armor", "Evade Ability", "Lightsaber Extension"]
 
 # Declaring all character entities
-your_hero = Hero("Hero")
+your_jedi = Jedi("Jedi")
 palpatine = Palpatine("Palpatine")
-goblin = Goblin("Goblin")
+super_battle_droid = SuperBattleDroid("Super Battle Droid")
+b1_droid = B1Droid("b1_droid")
+b1_droid_2 = B1Droid("b1_droid")
 zombie = Zombie("zombie")
 medic = Medic("Medic")
 shadow = Shadow("Shadow")
 # The order in which you face enemies
-enemy_order = [goblin, medic, shadow, palpatine]
+enemy_order = [b1_droid, b1_droid_2, super_battle_droid, medic, shadow, palpatine]
 
 main()
 
