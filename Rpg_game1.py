@@ -1,5 +1,5 @@
 """
-In this simple RPG game, The Hero (You) fights the enemy. You have the options to:
+In this simple RPG game, The Jedi (You) fights the enemy. You have the options to:
 
 1. fight enemy
 2. do nothing - in which case the enemy will attack you anyway
